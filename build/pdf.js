@@ -9910,38 +9910,12 @@ var isWorkerDisabled = false;
 var fallbackWorkerSrc;
 var fakeWorkerFilesLoader = null;
 {
-  var useRequireEnsure = false;
-
-  if (typeof window === 'undefined') {
-    isWorkerDisabled = true;
-
-    if (typeof require.ensure === 'undefined') {
-      require.ensure = require('node-ensure');
-    }
-
-    useRequireEnsure = true;
-  } else if (typeof require !== 'undefined' && typeof require.ensure === 'function') {
-    useRequireEnsure = true;
-  }
-
   if (typeof requirejs !== 'undefined' && requirejs.toUrl) {
     fallbackWorkerSrc = requirejs.toUrl('pdfjs-dist/build/pdf.worker.js');
   }
 
   var dynamicLoaderSupported = typeof requirejs !== 'undefined' && requirejs.load;
-  fakeWorkerFilesLoader = useRequireEnsure ? function () {
-    return new Promise(function (resolve, reject) {
-      require.ensure([], function () {
-        try {
-          var worker;
-          worker = require('./pdf.worker.js');
-          resolve(worker.WorkerMessageHandler);
-        } catch (ex) {
-          reject(ex);
-        }
-      }, reject, 'pdfjsWorker');
-    });
-  } : dynamicLoaderSupported ? function () {
+  fakeWorkerFilesLoader = dynamicLoaderSupported ? function () {
     return new Promise(function (resolve, reject) {
       requirejs(['pdfjs-dist/build/pdf.worker'], function (worker) {
         try {
